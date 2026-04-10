@@ -3,45 +3,49 @@
  * Placeholder for future video enrichment
  */
 export class TransitionScreen {
-    constructor() {
-        this._el = null;
-        this._resolve = null;
-    }
+  constructor() {
+    this._el = null;
+    this._resolve = null;
+  }
 
-    /**
-     * Show the transition screen with a narrative screenplay
-     * Returns a promise that resolves when the user clicks through
-     */
-    show(narrative) {
-        return new Promise((resolve) => {
-            this._resolve = resolve;
-            this._el = document.createElement('div');
-            this._el.className = 'transition-screen';
-            this._el.innerHTML = `
+  /**
+   * Show the transition screen with a narrative screenplay
+   * Returns a promise that resolves when the user clicks through
+   */
+  show(narrative) {
+    return new Promise((resolve) => {
+      this._resolve = resolve;
+      this._el = document.createElement('div');
+      this._el.className = 'transition-screen';
+      this._el.innerHTML = `
         <div class="transition-inner">
-          <div class="transition-video-placeholder">
-            <div class="transition-video-icon">▶</div>
-            <span class="transition-video-label">VIDEO PLACEHOLDER</span>
+          <div class="transition-scroll-body">
+            <div class="transition-video-placeholder">
+              <div class="transition-video-icon">▶</div>
+              <span class="transition-video-label">VIDEO PLACEHOLDER</span>
+            </div>
+            <h1 class="transition-title">${narrative.title}</h1>
+            <div class="screenplay">
+              ${narrative.screenplay.map(line => {
+        if (line === '') return '<br/>';
+        if (line.startsWith('        ')) return `<p class="screenplay-whisper">${line.trim()}</p>`;
+        if (line.startsWith('INT.') || line.startsWith('EXT.')) return `<p class="screenplay-heading">${line}</p>`;
+        if (line === 'FADE IN:' || line === 'FADE TO GAMEPLAY.') return `<p class="screenplay-direction">${line}</p>`;
+        return `<p class="screenplay-line">${line}</p>`;
+      }).join('\n')}
+            </div>
           </div>
-          <h1 class="transition-title">${narrative.title}</h1>
-          <div class="screenplay">
-            ${narrative.screenplay.map(line => {
-                if (line === '') return '<br/>';
-                if (line.startsWith('        ')) return `<p class="screenplay-whisper">${line.trim()}</p>`;
-                if (line.startsWith('INT.') || line.startsWith('EXT.')) return `<p class="screenplay-heading">${line}</p>`;
-                if (line === 'FADE IN:' || line === 'FADE TO GAMEPLAY.') return `<p class="screenplay-direction">${line}</p>`;
-                return `<p class="screenplay-line">${line}</p>`;
-            }).join('\n')}
+          <div class="transition-footer">
+            <button class="transition-btn">Begin</button>
           </div>
-          <button class="transition-btn">Begin</button>
         </div>
       `;
 
-            // Style injection (one-time)
-            if (!document.getElementById('transition-styles')) {
-                const style = document.createElement('style');
-                style.id = 'transition-styles';
-                style.textContent = `
+      // Style injection (one-time)
+      if (!document.getElementById('transition-styles')) {
+        const style = document.createElement('style');
+        style.id = 'transition-styles';
+        style.textContent = `
           .transition-screen {
             position: fixed; inset: 0; z-index: 50;
             display: flex; align-items: center; justify-content: center;
@@ -50,7 +54,31 @@ export class TransitionScreen {
           }
           @keyframes ts-fade-in { from { opacity: 0; } to { opacity: 1; } }
           .transition-inner {
-            max-width: 640px; padding: 48px; text-align: center;
+            max-width: 640px;
+            width: 90vw;
+            max-height: 92vh;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+          }
+          .transition-scroll-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 48px 24px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(77,154,255,0.25) transparent;
+          }
+          .transition-scroll-body::-webkit-scrollbar {
+            width: 4px;
+          }
+          .transition-scroll-body::-webkit-scrollbar-thumb {
+            background: rgba(77,154,255,0.25);
+            border-radius: 2px;
+          }
+          .transition-footer {
+            padding: 20px 48px 36px;
+            flex-shrink: 0;
+            background: linear-gradient(0deg, rgba(5,8,16,0.95) 70%, transparent 100%);
           }
           .transition-video-placeholder {
             width: 100%; aspect-ratio: 16/9;
@@ -120,36 +148,36 @@ export class TransitionScreen {
           .transition-screen.ts-out { animation: ts-fade-out 0.6s ease forwards; }
           @keyframes ts-fade-out { to { opacity: 0; } }
         `;
-                document.head.appendChild(style);
-            }
+        document.head.appendChild(style);
+      }
 
-            document.body.appendChild(this._el);
+      document.body.appendChild(this._el);
 
-            // Animate lines in sequentially
-            const lines = this._el.querySelectorAll('.screenplay p');
-            lines.forEach((line, i) => {
-                line.style.opacity = '0';
-                line.style.transform = 'translateY(8px)';
-                line.style.transition = `opacity 0.5s ease ${i * 0.15}s, transform 0.5s ease ${i * 0.15}s`;
-                requestAnimationFrame(() => {
-                    line.style.opacity = '1';
-                    line.style.transform = 'translateY(0)';
-                });
-            });
-
-            // Button click
-            this._el.querySelector('.transition-btn').addEventListener('click', () => {
-                this._hide();
-            });
+      // Animate lines in sequentially
+      const lines = this._el.querySelectorAll('.screenplay p');
+      lines.forEach((line, i) => {
+        line.style.opacity = '0';
+        line.style.transform = 'translateY(8px)';
+        line.style.transition = `opacity 0.5s ease ${i * 0.15}s, transform 0.5s ease ${i * 0.15}s`;
+        requestAnimationFrame(() => {
+          line.style.opacity = '1';
+          line.style.transform = 'translateY(0)';
         });
-    }
+      });
 
-    _hide() {
-        this._el.classList.add('ts-out');
-        setTimeout(() => {
-            this._el.remove();
-            this._el = null;
-            if (this._resolve) this._resolve();
-        }, 600);
-    }
+      // Button click
+      this._el.querySelector('.transition-btn').addEventListener('click', () => {
+        this._hide();
+      });
+    });
+  }
+
+  _hide() {
+    this._el.classList.add('ts-out');
+    setTimeout(() => {
+      this._el.remove();
+      this._el = null;
+      if (this._resolve) this._resolve();
+    }, 600);
+  }
 }
