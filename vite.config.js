@@ -6,4 +6,8 @@ export default defineConfig({
     port: 3000,
     open: true,
   },
+  test: {
+    environment: 'node',
+    include: ['src/**/__tests__/**/*.test.js'],
+  },
 });

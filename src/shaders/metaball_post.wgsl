@@ -50,7 +50,7 @@ fn fsMain(input: VertexOutput) -> @location(0) vec4<f32> {
     for (var dx: i32 = -3; dx <= 3; dx++) {
       for (var dy: i32 = -3; dy <= 3; dy++) {
         let offset = vec2<f32>(f32(dx), f32(dy)) * pixelSize * postParams.glowRadius;
-        let s = textureSample(inputTexture, inputSampler, input.uv + offset);
+        let s = textureSampleLevel(inputTexture, inputSampler, input.uv + offset, 0.0);
         if (s.a >= postParams.threshold) {
           let d = length(vec2<f32>(f32(dx), f32(dy))) / 3.0;
           glow = max(glow, (1.0 - d) * postParams.glowIntensity);
@@ -63,10 +63,10 @@ fn fsMain(input: VertexOutput) -> @location(0) vec4<f32> {
   }
 
   // Above threshold — render fluid surface with simple lighting
-  let dx_val = textureSample(inputTexture, inputSampler, input.uv + vec2<f32>(pixelSize.x, 0.0)).a
-             - textureSample(inputTexture, inputSampler, input.uv - vec2<f32>(pixelSize.x, 0.0)).a;
-  let dy_val = textureSample(inputTexture, inputSampler, input.uv + vec2<f32>(0.0, pixelSize.y)).a
-             - textureSample(inputTexture, inputSampler, input.uv - vec2<f32>(0.0, pixelSize.y)).a;
+  let dx_val = textureSampleLevel(inputTexture, inputSampler, input.uv + vec2<f32>(pixelSize.x, 0.0), 0.0).a
+             - textureSampleLevel(inputTexture, inputSampler, input.uv - vec2<f32>(pixelSize.x, 0.0), 0.0).a;
+  let dy_val = textureSampleLevel(inputTexture, inputSampler, input.uv + vec2<f32>(0.0, pixelSize.y), 0.0).a
+             - textureSampleLevel(inputTexture, inputSampler, input.uv - vec2<f32>(0.0, pixelSize.y), 0.0).a;
 
   let normal = normalize(vec3<f32>(dx_val * 4.0, dy_val * 4.0, 1.0));
   let lightDir = normalize(vec3<f32>(0.3, -0.5, 1.0));

@@ -126,11 +126,13 @@ export const stage2Config = {
         },
     ],
 
-    // Win condition
     winCondition: {
         type: 'keyReachesSurface',
-        surfaceY: 4, // Key must rise above this Y
+        surfaceY: 4,
         timeLimit: 90,
+        // extra.keyY is the key's current sim-space Y position (lower = risen higher)
+        check: (_params, elapsed, extra) =>
+            elapsed <= 90 && (extra?.keyY ?? Infinity) <= 4,
     },
 
     // Educational callouts
